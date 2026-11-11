@@ -11,7 +11,7 @@ Feature: Project management
     When I create a project named "Refonte du site web" with the description "Nouveau design et migration du CMS"
     Then a success notification confirms that the project "Refonte du site web" was created
     And the project "Refonte du site web" appears in the project overview and in the sidebar
-    And the project "Refonte du site web" is selected
+    And the breadcrumb shows "Refonte du site web"
     And the dashboard shows 1 project in total
 
   Scenario Outline: Reject a project without a valid name

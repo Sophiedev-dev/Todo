@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# Lecture seule : le workflow n'a besoin d'aucun droit d'écriture ni d'aucun secret.
+permissions:
+  contents: read
+
+# Un nouveau push sur la même branche (ou PR) annule l'exécution précédente devenue obsolète.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & BDD tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Node 24 LTS : requis par @cucumber/cucumber 13 (22 || 24) et Vite 8 (>= 22.12).
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Chromium uniquement (le seul navigateur utilisé par tests/support/hooks.js),
+      # avec les bibliothèques système Ubuntu dont il a besoin.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      # Aucun serveur ne tourne sur le port 3000 : tests/support/server.js démarre
+      # Vite automatiquement avant les scénarios et l'arrête à la fin.
+      # Les scénarios s'exécutent en série (configuration par défaut de Cucumber).
+      - name: Run BDD tests
+        run: npm run test:bdd
+
+      # Rapport conservé même si les tests échouent, à condition qu'il ait été généré.
+      - name: Upload Cucumber report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: cucumber-report
+          path: reports/cucumber-report.html
+          if-no-files-found: warn
+          retention-days: 14

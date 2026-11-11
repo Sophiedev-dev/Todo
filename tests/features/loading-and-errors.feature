@@ -30,8 +30,9 @@ Feature: Loading and error states
   @fault-injection
   Scenario: Retrying after a temporary failure loads the saved data
     Given a project "Refonte du site web" was saved previously
-    And the browser database fails to open the first time only
+    And the browser database is temporarily unavailable
     When I open the application
     Then I see the message "Impossible de charger vos données"
-    When I click "Réessayer"
+    When the browser database becomes available again
+    And I click "Réessayer"
     Then the project "Refonte du site web" appears in the project overview and in the sidebar
