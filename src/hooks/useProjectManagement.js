@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { storageService } from '../services/storageService.js';
 
 /**
@@ -11,6 +11,14 @@ export function useProjectManagement() {
   const [tasks, setTasks] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+
+  // Identifiant de la dernière lecture lancée : une réponse dont l'identifiant
+  // n'est plus le dernier est obsolète et ignorée (StrictMode, réessai, démontage).
+  const loadRequestIdRef = useRef(0);
+  // Vrai après le premier chargement réussi : la sélection automatique du
+  // premier projet ne doit se produire qu'une seule fois.
+  const hasLoadedRef = useRef(false);
 
   // Filtres et recherche
   const [taskFilter, setTaskFilter] = useState('all'); // 'all' | 'pending' | 'completed'
@@ -37,29 +45,50 @@ export function useProjectManagement() {
     return () => clearTimeout(timer);
   }, [notification]);
 
-  // Chargement initial
+  // Chargement des données depuis IndexedDB.
+  // Ne dépend d'aucun état : il n'est relancé qu'au montage ou par un réessai,
+  // jamais lors d'un changement de projet sélectionné.
   const loadData = useCallback(async () => {
+    const requestId = ++loadRequestIdRef.current;
+    setIsLoading(true);
+    setLoadError(null);
+
     try {
-      setIsLoading(true);
       const [fetchedProjects, fetchedTasks] = await Promise.all([
         storageService.getProjects(),
         storageService.getTasks()
       ]);
+      if (requestId !== loadRequestIdRef.current) return; // réponse obsolète
+
+      const isFirstLoad = !hasLoadedRef.current;
+      hasLoadedRef.current = true;
+
       setProjects(fetchedProjects);
       setTasks(fetchedTasks);
-      // Sélectionne par défaut le premier projet s'il existe
-      if (fetchedProjects.length > 0 && !selectedProjectId) {
-        setSelectedProjectId(fetchedProjects[0].id);
-      }
+      setSelectedProjectId((prev) => {
+        // Conserver la sélection actuelle si le projet existe toujours
+        // (null = Vue d'ensemble, choisie volontairement par l'utilisateur).
+        if (prev !== null && fetchedProjects.some((p) => p.id === prev)) return prev;
+        // Au tout premier chargement uniquement : sélectionner le premier projet.
+        if (isFirstLoad) return fetchedProjects.length > 0 ? fetchedProjects[0].id : null;
+        return null;
+      });
     } catch (err) {
-      showNotification(err.message || "Erreur de chargement des données", 'error');
+      if (requestId !== loadRequestIdRef.current) return;
+      setLoadError(err.message || "Erreur de chargement des données.");
     } finally {
-      setIsLoading(false);
+      if (requestId === loadRequestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [selectedProjectId, showNotification]);
+  }, []);
 
   useEffect(() => {
     loadData();
+    // Au démontage (ou au double montage de StrictMode), invalider la lecture en cours.
+    return () => {
+      loadRequestIdRef.current += 1;
+    };
   }, [loadData]);
 
   // Projet actuellement sélectionné
@@ -270,6 +299,8 @@ export function useProjectManagement() {
     displayedTasks,
     stats,
     isLoading,
+    loadError,
+    retryLoad: loadData,
     taskFilter,
     setTaskFilter,
     taskSearch,

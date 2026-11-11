@@ -4,6 +4,10 @@ import Sidebar from './components/Sidebar.jsx';
 import Header from './components/Header.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import NotificationToast from './components/NotificationToast.jsx';
+import ConfirmDialog from './components/ConfirmDialog.jsx';
+import DataLoadState from './components/DataLoadState.jsx';
+
+const plural = (count, singular, pluralForm) => `${count} ${count > 1 ? pluralForm : singular}`;
 
 /**
  * Composant racine de l'application TaskFlow.
@@ -18,6 +22,9 @@ export default function App() {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
+  // Confirmation de « Effacer tout » (suppression définitive dans IndexedDB)
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
+
   const handleOpenTaskModal = () => {
     if (projectState.projects.length === 0) {
       setIsProjectModalOpen(true);
@@ -25,6 +32,29 @@ export default function App() {
       setIsTaskModalOpen(true);
     }
   };
+
+  const handleConfirmClearAll = async () => {
+    // Fermer d'abord : empêche un second clic de relancer la suppression.
+    setIsClearConfirmOpen(false);
+    await projectState.resetDemoData();
+  };
+
+  // Aucun contenu (ni message « vide ») tant que les données ne sont pas chargées.
+  if (projectState.isLoading) {
+    return <DataLoadState status="loading" />;
+  }
+
+  if (projectState.loadError) {
+    return (
+      <DataLoadState
+        status="error"
+        message={projectState.loadError}
+        onRetry={projectState.retryLoad}
+      />
+    );
+  }
+
+  const { totalProjects, totalTasks } = projectState.stats;
 
   return (
     <div className="dashboard-container">
@@ -35,7 +65,7 @@ export default function App() {
         projectStatsMap={projectState.stats.projectStatsMap}
         onSelectProject={projectState.selectProject}
         onAddProject={() => setIsProjectModalOpen(true)}
-        onResetDemoData={projectState.resetDemoData}
+        onResetDemoData={() => setIsClearConfirmOpen(true)}
         isOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
       />
@@ -61,6 +91,17 @@ export default function App() {
           />
         </main>
       </div>
+
+      {/* Confirmation avant suppression définitive de toutes les données */}
+      <ConfirmDialog
+        isOpen={isClearConfirmOpen}
+        title="Effacer toutes les données"
+        message={`Cette action supprimera définitivement ${plural(totalProjects, 'projet', 'projets')} et ${plural(totalTasks, 'tâche', 'tâches')}. Elle est irréversible.`}
+        confirmLabel="Tout effacer définitivement"
+        isDanger={true}
+        onConfirm={handleConfirmClearAll}
+        onCancel={() => setIsClearConfirmOpen(false)}
+      />
 
       {/* Notifications toast de retour utilisateur */}
       <NotificationToast
