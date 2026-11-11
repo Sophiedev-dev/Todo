@@ -100,8 +100,9 @@ export default function Dashboard({
       message: warningMsg,
       confirmLabel: "Supprimer définitivement",
       onConfirm: async () => {
-        await deleteProject(project.id);
+        // Fermer d'abord : un double clic ne relance pas la suppression.
         setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        await deleteProject(project.id);
       }
     });
   };
@@ -144,8 +145,9 @@ export default function Dashboard({
       message: `Êtes-vous sûr de vouloir supprimer la tâche "${task.title}" ?`,
       confirmLabel: "Supprimer la tâche",
       onConfirm: async () => {
-        await deleteTask(task.id);
+        // Fermer d'abord : un double clic ne relance pas la suppression.
         setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        await deleteTask(task.id);
       }
     });
   };

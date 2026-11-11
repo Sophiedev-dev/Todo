@@ -202,15 +202,14 @@ export function useProjectManagement() {
       const projectName = projectToDelete ? projectToDelete.name : 'Le projet';
       
       const { deletedTasksCount } = await storageService.deleteProject(id);
-      
-      setProjects(prev => {
-        const remaining = prev.filter(p => p.id !== id);
-        // Si le projet supprimé était sélectionné, basculer sur un autre
-        if (selectedProjectId === id) {
-          setSelectedProjectId(remaining.length > 0 ? remaining[0].id : null);
-        }
-        return remaining;
-      });
+
+      // Si le projet supprimé était sélectionné, basculer sur le premier projet restant.
+      // (Calculé hors de la fonction de mise à jour de setProjects, qui doit rester pure.)
+      if (selectedProjectId === id) {
+        const remaining = projects.filter(p => p.id !== id);
+        setSelectedProjectId(remaining.length > 0 ? remaining[0].id : null);
+      }
+      setProjects(prev => prev.filter(p => p.id !== id));
 
       setTasks(prev => prev.filter(t => t.projectId !== id));
 
@@ -308,6 +307,7 @@ export function useProjectManagement() {
     taskSort,
     setTaskSort,
     notification,
+    showNotification,
     dismissNotification,
     selectProject: handleSelectProject,
     createProject: handleCreateProject,

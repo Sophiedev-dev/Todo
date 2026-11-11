@@ -1,11 +1,9 @@
 import React from 'react';
-import { 
-  FolderKanban, 
-  Folder, 
-  Plus, 
-  LayoutDashboard, 
-  CheckCircle2, 
-  RotateCcw, 
+import {
+  Folder,
+  Plus,
+  LayoutDashboard,
+  RotateCcw,
   X,
   Layers
 } from 'lucide-react';

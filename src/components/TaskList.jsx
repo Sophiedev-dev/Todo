@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Search, Filter, ArrowUpDown, CheckCircle, FolderX, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, ArrowUpDown, CheckCircle, Edit2, Trash2 } from 'lucide-react';
 import TaskItem from './TaskItem.jsx';
 
 /**
@@ -46,11 +46,11 @@ export default function TaskList({
               <p className="mt-1 text-xs text-slate-500">
                 Créez votre premier projet ci-dessus pour commencer à organiser vos tâches.
               </p>
-            ) : (
+            ) : currentProject ? (
               <p className="mt-1 text-xs text-slate-400">
                 Aucune description fournie pour ce projet.
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
