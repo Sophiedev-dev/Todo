@@ -106,23 +106,29 @@ export default function TaskForm({
             </div>
           )}
 
-          <div>
-            <label htmlFor="task-project" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Projet associé <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="task-project"
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {projects.length === 0 ? (
+            <div className="p-3 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
+              Aucun projet n'existe pour le moment. Veuillez d'abord créer un projet pour pouvoir lui assigner des tâches.
+            </div>
+          ) : (
+            <div>
+              <label htmlFor="task-project" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Projet associé <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="task-project"
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                className="w-full px-3.5 py-2 text-sm text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label htmlFor="task-title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -166,7 +172,7 @@ export default function TaskForm({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || projects.length === 0}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? "Enregistrement..." : isEditMode ? "Enregistrer les modifications" : "Créer la tâche"}

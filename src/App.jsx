@@ -18,6 +18,14 @@ export default function App() {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
+  const handleOpenTaskModal = () => {
+    if (projectState.projects.length === 0) {
+      setIsProjectModalOpen(true);
+    } else {
+      setIsTaskModalOpen(true);
+    }
+  };
+
   return (
     <div className="dashboard-container">
       {/* Barre latérale responsive */}
@@ -38,7 +46,7 @@ export default function App() {
         <Header
           currentProject={projectState.currentProject}
           onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
-          onNewTask={() => setIsTaskModalOpen(true)}
+          onNewTask={handleOpenTaskModal}
           onNewProject={() => setIsProjectModalOpen(true)}
         />
 

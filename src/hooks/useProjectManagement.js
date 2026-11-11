@@ -251,13 +251,11 @@ export function useProjectManagement() {
 
   const handleResetData = useCallback(async () => {
     try {
-      const { projects: resetProjects, tasks: resetTasks } = await storageService.resetToDemoData();
+      const { projects: resetProjects, tasks: resetTasks } = await storageService.clearAllData();
       setProjects(resetProjects);
       setTasks(resetTasks);
-      if (resetProjects.length > 0) {
-        setSelectedProjectId(resetProjects[0].id);
-      }
-      showNotification("Données de démonstration réinitialisées.", 'info');
+      setSelectedProjectId(null);
+      showNotification("Toutes les données ont été effacées.", 'info');
     } catch (err) {
       showNotification(err.message, 'error');
     }

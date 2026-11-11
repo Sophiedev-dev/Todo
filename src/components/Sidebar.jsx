@@ -168,19 +168,21 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Pied de page de la Sidebar avec état de stockage et réinitialisation */}
+        {/* Pied de page de la Sidebar avec état de stockage */}
         <div className="p-3.5 border-t border-slate-100 bg-slate-50/50 shrink-0 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="text-[11px] text-slate-400">Stockage : En mémoire</span>
-            <button
-              type="button"
-              onClick={onResetDemoData}
-              className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 p-1 rounded transition-colors cursor-pointer"
-              title="Réinitialiser les données de démonstration"
-            >
-              <RotateCcw className="w-3 h-3" />
-              <span>Réinitialiser</span>
-            </button>
+            {projects.length > 0 && (
+              <button
+                type="button"
+                onClick={onResetDemoData}
+                className="text-[11px] text-slate-400 hover:text-red-600 flex items-center gap-1 p-1 rounded transition-colors cursor-pointer"
+                title="Effacer toutes les données"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Effacer tout</span>
+              </button>
+            )}
           </div>
         </div>
       </aside>

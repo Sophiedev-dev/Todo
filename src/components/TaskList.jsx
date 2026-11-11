@@ -8,6 +8,7 @@ import TaskItem from './TaskItem.jsx';
  */
 export default function TaskList({
   currentProject,
+  hasProjects = true,
   tasks,
   allProjectTasksCount,
   pendingCount,
@@ -19,6 +20,7 @@ export default function TaskList({
   sortOption,
   onSortChange,
   onAddTask,
+  onAddProject,
   onToggleTask,
   onEditTask,
   onDeleteTask,
@@ -39,6 +41,10 @@ export default function TaskList({
             {currentProject && currentProject.description ? (
               <p className="mt-1 text-sm text-slate-600 line-clamp-2">
                 {currentProject.description}
+              </p>
+            ) : !hasProjects ? (
+              <p className="mt-1 text-xs text-slate-500">
+                Créez votre premier projet ci-dessus pour commencer à organiser vos tâches.
               </p>
             ) : (
               <p className="mt-1 text-xs text-slate-400">
@@ -179,12 +185,16 @@ export default function TaskList({
           <h3 className="text-sm font-semibold text-slate-900">
             {searchQuery || filter !== 'all'
               ? "Aucune tâche ne correspond à vos critères"
+              : !hasProjects
+              ? "Aucun projet pour le moment"
               : "Aucune tâche dans ce projet pour le moment"}
           </h3>
 
           <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
             {searchQuery || filter !== 'all'
               ? "Essayez de modifier votre recherche ou de réinitialiser le filtre de statut."
+              : !hasProjects
+              ? "Créez votre premier projet pour pouvoir y associer des tâches."
               : "Commencez dès maintenant en ajoutant la première tâche à accomplir pour ce projet."}
           </p>
 
@@ -199,6 +209,15 @@ export default function TaskList({
                 className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 Réinitialiser les filtres
+              </button>
+            ) : !hasProjects ? (
+              <button
+                type="button"
+                onClick={onAddProject}
+                className="px-3.5 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Créer le premier projet</span>
               </button>
             ) : (
               <button

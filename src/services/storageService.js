@@ -203,11 +203,18 @@ export const storageService = {
   },
 
   /**
-   * Réinitialise les données aux valeurs de démonstration initiales.
+   * Efface toutes les données en mémoire.
+   */
+  async clearAllData() {
+    projectsStore = [];
+    tasksStore = [];
+    return Promise.resolve({ projects: [], tasks: [] });
+  },
+
+  /**
+   * Réinitialise les données (vide).
    */
   async resetToDemoData() {
-    projectsStore = [...INITIAL_PROJECTS];
-    tasksStore = [...INITIAL_TASKS];
-    return Promise.resolve({ projects: [...projectsStore], tasks: [...tasksStore] });
+    return this.clearAllData();
   }
 };

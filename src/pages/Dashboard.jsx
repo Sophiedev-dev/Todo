@@ -108,6 +108,11 @@ export default function Dashboard({
 
   // Handlers Tâches
   const handleOpenCreateTask = () => {
+    if (projects.length === 0) {
+      projectState.showNotification?.("Veuillez d'abord créer un projet avant d'ajouter une tâche.", 'info');
+      setIsProjectModalOpen(true);
+      return;
+    }
     setEditingTask(null);
     setIsTaskModalOpen(true);
   };
@@ -179,6 +184,7 @@ export default function Dashboard({
       <section aria-label="Gestion des tâches">
         <TaskList
           currentProject={currentProject}
+          hasProjects={projects.length > 0}
           tasks={displayedTasks}
           allProjectTasksCount={currentProjectTasks.length}
           pendingCount={pendingCount}
@@ -190,6 +196,7 @@ export default function Dashboard({
           sortOption={taskSort}
           onSortChange={setTaskSort}
           onAddTask={handleOpenCreateTask}
+          onAddProject={handleOpenCreateProject}
           onToggleTask={toggleTask}
           onEditTask={handleOpenEditTask}
           onDeleteTask={handlePromptDeleteTask}
