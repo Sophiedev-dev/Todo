@@ -34,9 +34,36 @@ jobs:
         run: npm ci
 
       # Chromium uniquement (le seul navigateur utilisé par tests/support/hooks.js),
-      # avec les bibliothèques système Ubuntu dont il a besoin.
+      # sans apt : l'image ubuntu-latest fournit déjà ses bibliothèques système
+      # (installées avec Google Chrome, Chromium et Edge, présents sur le runner).
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
+
+      # Vérifie que Chromium démarre réellement. Uniquement en cas d'échec, les
+      # dépendances système sont installées via apt, avec plusieurs tentatives
+      # (la résolution DNS des miroirs Ubuntu peut échouer temporairement).
+      - name: Verify Chromium can start
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          launch() {
+            node -e "require('@playwright/test').chromium.launch().then((b) => b.close())"
+          }
+          if launch; then
+            echo "Chromium démarre avec les bibliothèques déjà présentes sur le runner."
+            exit 0
+          fi
+          echo "::warning::Chromium ne démarre pas : installation des dépendances système via apt."
+          for attempt in 1 2 3; do
+            if npx playwright install-deps chromium; then
+              break
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Tentative ${attempt} échouée, nouvel essai dans $((attempt * 20)) s."
+              sleep $((attempt * 20))
+            fi
+          done
+          launch
 
       - name: Build
         run: npm run build
